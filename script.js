@@ -36,11 +36,36 @@ filterControl.addTo(mymap);
 // ---- Helper functions ----
 function updateMarker(layer) {
   var feature = layer.feature;
+
+  // Special marker + popup for 315
+  if (feature.properties.REV_Address === "315 Whisperwood Dr") {
+    layer.setIcon(
+      L.divIcon({
+        html: '<span style="font-size:30px;">🎉</span>',
+        className: "",
+        iconSize: [20, 20],
+        popupAnchor: [0, -10],
+      })
+    );
+
+    layer.bindPopup(
+      '<img src="https://media.tenor.com/COsinGRLiV4AAAAM/ursos-fritando-bear.gif" ' +
+        'style="width:200px; display:block; border-radius:6px;"><br><img src="https://c8.alamy.com/comp/TW56AE/word-spice-made-of-red-chili-peppers-isolated-on-white-TW56AE.jpg" ' +
+        'style="width:200px; display:block; border-radius:6px;">',
+      { maxWidth: 220 }
+    );
+
+    return;
+  }
+
+  // Normal markers
   var iconClass =
     feature.properties.Notified === "Yes"
       ? "fa-check-circle"
       : "fa-times-circle";
+
   var iconColor = feature.properties.Notified === "Yes" ? "#93c47d" : "#e06666";
+
   layer.setIcon(
     L.divIcon({
       html:
@@ -48,17 +73,19 @@ function updateMarker(layer) {
         iconClass +
         '" style="color:' +
         iconColor +
-        '; font-size:22px;"></i>',
+        '; font-size:20px;"></i>',
       className: "",
       iconSize: [20, 20],
       popupAnchor: [0, -10],
     })
   );
+
   updatePopup(layer);
 }
 
 function updatePopup(layer) {
   var feature = layer.feature;
+
   var notifiedText =
     feature.properties.Notified === "Yes"
       ? '<span style="color:#93c47d;">Notified 🎉</span>'
@@ -86,7 +113,7 @@ window.setNotified = function (id, value) {
 };
 
 // 3. Load GeoJSON points
-var notify_addresses = L.geoJson.ajax("data/HousesToNotify.geojson", {
+var notify_addresses = L.geoJson.ajax("data/HousesToNotify_v2.geojson", {
   interactive: true,
   bubblingMouseEvents: false,
   onEachFeature: function (feature, layer) {
