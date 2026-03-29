@@ -161,21 +161,32 @@ var notify_addresses = L.geoJson.ajax("data/HousesToNotify_v2.geojson", {
   },
 });
 
-// Populate neighborhood filter and wire up filtering once GeoJSON loads
 notify_addresses.on("data:loaded", function () {
-  var neighborhoods = new Set();
+  var neighborhoodCounts = {};
+
   notify_addresses.eachLayer(function (layer) {
     var n = layer.feature.properties.REV_Neighborhood;
-    if (n) neighborhoods.add(n);
+    var notified = layer.feature.properties.Notified;
+    if (n && notified === "No") {
+      // only count "No" features
+      neighborhoodCounts[n] = (neighborhoodCounts[n] || 0) + 1;
+    }
   });
 
+  // Sum all "No" counts across every neighborhood for the "All" option
+  var totalNo = Object.values(neighborhoodCounts).reduce(function (sum, c) {
+    return sum + c;
+  }, 0);
+
   var select = document.getElementById("neighborhood-filter");
-  Array.from(neighborhoods)
+  select.options[0].textContent = "All (" + totalNo + ")"; // update the existing "All" option
+
+  Object.keys(neighborhoodCounts)
     .sort()
     .forEach(function (n) {
       var opt = document.createElement("option");
       opt.value = n;
-      opt.textContent = n;
+      opt.textContent = n + " (" + neighborhoodCounts[n] + ")";
       select.appendChild(opt);
     });
 
